@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTacToe</title>
+    <script src="https://kit.fontawesome.com/8289b1dd14.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <div class="main"> 
+        <h1>Tic-Tac-Toe</h1>
+        <div class="score">
+            <span><u>Scores</u></span><br>
+            <span id="p1_score">Player A : 0</span><br>
+            <span id="draw_score">Draw : 0</span><br>
+            <span id="p2_score">Player B : 0</span>
+        </div>
+        <h3 id="turnText" style="color: aliceblue;">Turn of: X</h3> 
+        
+        <div class="boardContainer" style="margin-top: 20px;">
+            <div class="line" id="line"></div>
+            <button id="00"></button>
+            <button id="01"></button>
+            <button id="02"></button>
+            <button id="10"></button>
+            <button id="11"></button>
+            <button id="12"></button>
+            <button id="20"></button>
+            <button id="21"></button>
+            <button id="22"></button>
+        </div>
+        
+        <div class="reset">
+            <button type="button" class="btn" id="restartBtn">Reset Game</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll(".boardContainer button");
+            const turnText = document.getElementById("turnText");
+            const restartBtn = document.getElementById("restartBtn");
+            const p1_score = document.getElementById("p1_score");
+            const p2_score = document.getElementById("p2_score");
+            const draw_score = document.getElementById("draw_score");
+            const line = document.getElementById("line");
+
+            const players = ['X', 'O'];
+            let currentTurn = players[0];
+            let player1Hits = [];
+            let player2Hits = [];
+            let p1Score = 0;
+            let p2Score = 0;
+            let drawScore = 0;
+
+            const winningConditions = [
+                ["00", "01", "02"], ["10", "11", "12"], ["20", "21", "22"],
+                ["00", "10", "20"], ["01", "11", "21"], ["02", "12", "22"],
+                ["00", "11", "22"], ["02", "11", "20"]
+            ];
+
+            const winningLines = {
+                "00,01,02": { transform: "translate(10px,50px) rotate(0deg)" },
+                "10,11,12": { transform: "translate(10px,150px) rotate(0deg)" },
+                "20,21,22": { transform: "translate(10px,250px) rotate(0deg)" },
+                "00,10,20": { transform: "translate(-100px,150px) rotate(90deg)" },
+                "01,11,21": { transform: "translate(10px,150px) rotate(90deg)" },
+                "02,12,22": { transform: "translate(100px,140px) rotate(90deg)" },
+                "00,11,22": { transform: "translate(10px,160px) rotate(45deg)" },
+                "02,11,20": { transform: "translate(-2px,150px) rotate(-45deg)" }
+            };
+
+            restartBtn.addEventListener("click", resetGame);
+
+            buttons.forEach(btn => {
+                btn.addEventListener("click", function (e) {
+                    if (btn.textContent) return alert("This square is already filled.");
+                    playTurn(btn);
+                    e.preventDefault();
+                });
+            });
+
+            function playTurn(button) {
+                button.textContent = currentTurn;
+                updatePlayerHits(button.id, currentTurn);
+                checkWinner();
+                toggleTurn();
+            }
+
+            function updatePlayerHits(id, player) {
+                if (player === players[0]) {
+                    player1Hits.push(id);
+                } else {
+                    player2Hits.push(id);
+                }
+            }
+
+            function toggleTurn() {
+                currentTurn = currentTurn === players[0] ? players[1] : players[0];
+                turnText.textContent = `Turn of: ${currentTurn}`;
+            }
+
+            function checkWinner() {
+                const playerHits = currentTurn === players[0] ? player1Hits : player2Hits;
+                let winner = null;
+
+                for (const condition of winningConditions) {
+                    if (condition.every(pos => playerHits.includes(pos))) {
+                        winner = currentTurn;
+                        drawWinningLine(condition);
+                        break;
+                    }
+                }
+
+                if (winner) {
+                    alert(`${winner === players[0] ? "Player A" : "Player B"} Won`);
+                    updateScore(winner);
+                    displayScore();
+                    setTimeout(resetGame, 2000); 
+                    return;
+                }
+
+                if (player1Hits.length + player2Hits.length === 9) {
+                    alert("Draw");
+                    drawScore++;
+                    displayScore();
+                    setTimeout(resetGame, 2000); 
+                }
+            }
+
+            function drawWinningLine(condition) {
+                const key = condition.join(",");
+                const lineStyle = winningLines[key];
+                if (lineStyle) {
+                    line.style.transform = lineStyle.transform;
+                }
+            }
+
+            function updateScore(player) {
+                if (player === players[0]) {
+                    p1Score++;
+                } else {
+                    p2Score++;
+                }
+            }
+
+            function displayScore() {
+                p1_score.textContent = `Player A: ${p1Score}`;
+                p2_score.textContent = `Player B: ${p2Score}`;
+                draw_score.textContent = `Draw: ${drawScore}`;
+            }
+
+            function resetGame() {
+                player1Hits = [];
+                player2Hits = [];
+                buttons.forEach(btn => {
+                    btn.textContent = "";
+                });
+                line.style.transform = ""; 
+                currentTurn = players[0];
+                turnText.textContent = `Turn of: ${currentTurn}`;
+            }
+        });
+    </script>
+</body>
+</html>
+
